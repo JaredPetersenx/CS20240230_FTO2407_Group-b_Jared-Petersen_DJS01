@@ -6,28 +6,75 @@
  */
 
 // Given Parameters
-const vel = 10000; // velocity (km/h)
-const acc = 3; // acceleration (m/s^2)
-const time = 3600; // seconds (1 hour)
-const d = 0; // distance (km)
-const fuel = 5000; // remaining fuel (kg)
-const fbr = 0.5; // fuel burn rate (kg/s)
+const parameters = {
+  velocity: 10000, // velocity (km/h)
+  acceleration: 3, // acceleration (m/s^2)
+  timeSec: 3600, // time in seconds (1 hour)
+  initialDistance: 0, // initial distance in km
+  remainingFuel: 5000, // remaining fuel in kg
+  fuelBurnRate: 0.5 // fuel burn rate in kg/s
+};
+
+// Function that converts seconds to hours
+const secondsToHours = (seconds) => {
+  return seconds / 3600; // Convert seconds to hours
+};
+
+// Function that calculates new velocity with error handling
+const calcNewVelocity = ({ velocity, acceleration, timeSec }) => {
+  // Check for parameter validity
+  if (typeof velocity !== 'number' || typeof acceleration !== 'number' || typeof timeSec !== 'number') {
+    throw new Error('Velocity, acceleration, and time must be numbers.');
+  }
+  
+  if (timeSec < 0) {
+    throw new Error('Time cannot be negative.');
+  }
+  
+  // Converts acceleration from m/s² to km/h²
+  const accelerationKmh2 = acceleration * 3600 * 3600 / 1000; // 1 m/s² = 12960 km/h²
+  
+  // Calculation of the new velocity
+  return velocity + (accelerationKmh2 * secondsToHours(timeSec));
+};
+
+// Calculates the new distance
+const calculateNewDistance = ({ initialDistance, velocity, timeSec }) => {
+  return initialDistance + (velocity * secondsToHours(timeSec));
+};
 
 
-const d2 = d + (vel*time) //calcultes new distance
-const rf = fbr*time //calculates remaining fuel
-const vel2 = calcNewVel(acc, vel, time) //calculates new velocity based on acceleration
+// Calculates the remaining fuel
+const calculateRemainingFuel = ({ burnRate, timeSec }) => {
+  return burnRate * timeSec; // in kg
+};
 
-// Pick up an error with how the function below is called and make it robust to such errors
-calcNewVel = (vel, acc, time) => { 
-  return vel + (acc*time)
+
+// Calculates the new values
+try {
+  const newDistance = calculateNewDistance({
+    initialDistance: parameters.initialDistance,
+    velocity: parameters.velocity,
+    timeSec: parameters.timeSec
+  });
+  
+  const fuelUsed = calculateRemainingFuel({
+    burnRate: parameters.fuelBurnRate,
+    timeSec: parameters.timeSec
+  });
+  
+  const newVelocity = calcNewVelocity({
+    velocity: parameters.velocity,
+    acceleration: parameters.acceleration,
+    timeSec: parameters.timeSec
+  });
+  
+  console.log(`Corrected New Velocity: ${newVelocity.toFixed(2)} km/h`);
+  console.log(`Corrected New Distance: ${newDistance.toFixed(2)} km`);
+  console.log(`Corrected Remaining Fuel: ${parameters.remainingFuel - fuelUsed} kg`);
+} catch (error) {
+  console.error(`Error: ${error.message}`);
 }
-
-console.log(`Corrected New Velocity: ${vel2} km/h`);
-console.log(`Corrected New Distance: ${d2} km`);
-console.log(`Corrected Remaining Fuel: ${rf} kg`);
-
-
 
 
 
